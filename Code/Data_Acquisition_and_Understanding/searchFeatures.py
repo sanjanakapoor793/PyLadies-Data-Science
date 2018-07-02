@@ -3,7 +3,7 @@
 """
 Created on Thu May 17 13:53:01 2018
 
-@author: s0k00rp
+@author: Sanjana Kapoor
 """
 
 from pymongo import MongoClient

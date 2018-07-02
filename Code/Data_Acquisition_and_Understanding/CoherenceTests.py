@@ -3,7 +3,7 @@
 """
 Created on Tue Jun 19 11:09:38 2018
 
-@author: s0k00rp
+@author: Sanjana Kapoor
 """
 
 from gensim.models import ldamodel

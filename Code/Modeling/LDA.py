@@ -3,7 +3,7 @@
 """
 Created on Fri Apr 20 15:46:20 2018
 
-@author: s0k00rp
+@author: Sanjana Kapoor
 """
 
 #from store_data import EmailDataStorage 

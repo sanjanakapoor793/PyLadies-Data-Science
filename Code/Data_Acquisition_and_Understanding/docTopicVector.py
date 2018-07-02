@@ -3,7 +3,7 @@
 """
 Created on Thu May  3 14:17:11 2018
 
-@author: s0k00rp
+@author: Sanjana Kapoor
 """
 from gensim.corpora.mmcorpus import MmCorpus
 from gensim.models import ldamodel

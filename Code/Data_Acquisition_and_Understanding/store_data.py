@@ -3,7 +3,7 @@
 """
 Created on Fri Apr 20 11:28:42 2018
 
-@author: s0k00rp
+@author: Sanjana Kapoor
 """
 import os
 import csv
