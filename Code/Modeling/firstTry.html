@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<svg width="960" height="600"></svg>
+<script src ="d3-queue.js" type="text/javascript"></script>
+<script src ="d3-queue.min.js" type="text/javascript"></script>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<script>
+
+	var nodes = []
+	var links = []
+
+	var topic_to_name = 
+		{
+			1: "normal language #1", 
+			2: "enron business", 
+			3: "government/business/law", 
+			4: "enron/stocks", 
+			5: "banking/money", 
+			6: "status quo/company report", 
+			7: "too much/random", 
+			8: "business/product", 
+			9: "email language", 
+			10: "meetings", 
+			11: "email terms/names", 
+			12: "scheduling", 
+			13: "legal terms", 
+			14: "NAME?", 
+			15: "business deal/delivery/return", 
+			16: "NAME?", 
+			17: "NAME?", 
+			18: "email disclosure", 
+			19: "NAME?", 
+			20: "NAME?", 
+			21: "name #1", 
+			22: "name #2", 
+			23: "fantasy sports", 
+			24: "trading/transactions", 
+			25: "random? ", 
+			26: "names #3", 
+			27: "image/random", 
+			28: "enron employee info", 
+			29: "online activity (click, site, web)", 
+			30: "party/outside work", 
+			31: "names #4", 
+			32: "enron product/ish", 
+			33: "email terms", 
+			34: "names #5/trivial nouns", 
+			35: "names #6", 
+			36: "random?", 
+			37: "project/work", 
+			38: "banking/finances", 
+			39: "hotels/travel", 
+			40: "text formatting", 
+			41: "places #1", 
+			42: "numbers", 
+			43: "places #2", 
+			44: "month/dates", 
+			45: "planning/out of work", 
+			46: "random", 
+			47: "random #3", 
+			48: "random #4", 
+			49: "random #5", 
+			50: "random #6"
+		}
+
+	var single_id = '18782981.1075855378110.JavaMail.evans@thyme'
+
+
+	// d3.json("http://0.0.0.0:5000/similar/" + single_id).then(console.log);
+	d3.json("http://0.0.0.0:5000/similar/" + single_id).then(function(data){
+		return addNodes(data); 
+	});
+	// .then(function(data){
+	// 	return formatGraphs();
+	// });
+
+
+	function addNodes(list_similar_id){
+		/*
+		Ok, so right now we have a list of ids. this list of ids corresponds to the ids of the similar documents. 
+
+		Go through the list of similar ids and get all the email information out of them. Then go through and add them to the nodes list after checking that they do not already exist in the list. 
+
+		As we go through the list of similar ids, we break away and go through and add all the topics for which the percentagge/decimal is not zero. again, must check to make sure that the node doesn't already exist. there is no point in adding the same node twice in this new case. 
+
+		*/
+		console.log('list_similar_id ' + list_similar_id);
+
+		// nodes.push({id: "Topic 104", subject: "tester topic", topic: 104, status: false});
+		list_similar_id.push(single_id);
+
+		const node_queue = d3.queue()
+		for (var similar_id of list_similar_id){
+			// console.log("starting a fresh one"); 
+			console.log(similar_id);
+			node_queue.defer(function(cb) {
+				d3.json("http://0.0.0.0:5000/EnronEmailData/emails/" + similar_id)
+					.then(function(data){
+						return manipulateEmails(data); 
+					}).then(cb);
+			});
+		}
+
+		node_queue.awaitAll(function() {
+			console.log("nodes added");
+			formatGraphs();
+		});
+	}
+
+	function manipulateEmails(email){
+		console.log(email);
+		var found = false; 
+		for (node of nodes){
+			if(node.id === email["_id"])
+				found = true; 
+		}
+		if(!found){
+			nodes.push({id: email["_id"], subject: email["subject"], 
+				sender: email["sender"], recipient: email["recipient"], status: false});
+			return addTopics(email['_id']); 
+		}
+
+		return Promise.resolve();
+
+	}
+
+	function addTopics(current_id){
+		// console.log(current_id);
+		return d3.json("http://0.0.0.0:5000/DocTopicVectors/tVectors/" + current_id).then(function(data){		
+					// console.log("data" + data)
+			// console.log("current_id " + current_id);
+			return manipulateTopics(data); 
+		});
+	}
+
+
+	function manipulateTopics(complete_topic_info){
+		// console.log(complete_topic_info);
+		var complete_topic_values = complete_topic_info['topic_values']; 
+		for (single_topic of complete_topic_values){
+			// if(single_topic[0] == 1){
+			// 	console.log("Topic " + single_topic[0] === "Topic 1");
+			// }
+			
+			var found; 
+			if(single_topic[1] != 0){
+				found = false; 
+				for (var node of nodes){
+					if(node.status && node.topic === single_topic[0])
+						found = true;
+				}
+				if(!found){
+					// console.log(single_topic);
+					topic_dict = {id: "Topic " + single_topic[0], subject: topic_to_name[single_topic[0]], topic: single_topic[0], status: true}
+					// console.log(topic_dict);
+					nodes.push(topic_dict); 
+				}
+				var target_label = "Topic " + single_topic[0];
+				var source_label = complete_topic_info['_id'];
+
+				// console.log(target_label);
+				// console.log(typeof target_label);
+				new_obj = {target: target_label, source: source_label, strength: single_topic[1]};
+				// console.log(typeof new_obj);
+				links.push(new_obj); 
+			}
+		}
+		console.log("manipulate topics test");
+		return Promise.resolve();
+	}
+
+
+	function formatGraphs(){ 
+		// console.log("hello");
+		console.log(nodes);
+		console.log(links);
+
+		// console.log(nodes[7])
+		// var ref_node = {id: "Topic 1", subject: "normal language #1", status: true, topic: 1}; 
+
+		// console.log(nodes[7] === {id: "Topic 1", subject: "normal language #1", status: true, topic: 1});
+
+		var width = window.innerWidth
+		var height = window.innerHeight
+
+		var svg = d3.select('svg')
+		svg.attr('width', width)
+			.attr('height', height)
+
+		var linkForce = d3
+			.forceLink()
+			.id(function(link) { return link.id})
+			.strength(function(link) {return link.strength})
+
+		var simulation = d3
+			.forceSimulation()
+			.force('link', linkForce)
+			.force('charge', d3.forceManyBody().strength(-120))
+			.force('center', d3.forceCenter(width/2, height/2))
+
+
+		// var drag = d3.behavior.drag().on('drag', function(d) {
+		// 		var node = d3.select(this), 
+		// 			attrs = layout.node(d);
+		// 		attrs.x += d3.event.dx;
+		// 		attrs.y += d3.event.dy;
+		// 		node.attr('transform', 'translate('+ attrs.x + ',' + attrs.y + ')');
+		// 	});
+
+		// function dragstart(d, i) {
+		// 	simulation.stop()
+		// }
+
+		// var drag = d3.drag().on("drag", function () {
+  //       	d3.event.sourceEvent.stopPropagation(); // silence other listeners
+  //       	dragMove(this, obj, 'points')
+  //    	})
+
+		var linkElements = svg.append("g")
+			.attr("class", "links")
+			.selectAll("line")
+			.data(links)
+			.enter().append("line")
+				.attr("stroke-width", function(link) {return link.strength * 30})
+					.attr("stroke", "rgba(200, 0, 0, .2)")
+
+		var nodeElements = svg.append("g")
+			.attr("class", "nodes")
+			.selectAll("circle")
+			.data(nodes)
+			.enter().append("circle")
+				.attr("r", 10)
+			.call(d3.drag()
+				.on("start", dragstart)
+				.on("drag", dragged)
+				.on("end", dragend));
+
+		// console.log("testing nodeElements");
+		// for (node of nodeElements){
+		// 	console.log(node);
+		// }
+
+		// svg.data(nodes)
+		// 	.enter()
+		// 	.call(d3.drag()
+	 //        	.on("start", dragstart)
+	 //        	.on("drag", dragged)
+	 //        	.on("end", dragend));
+
+	    // function dragstart(d, i) {
+	    //     simulation.stop() // stops the force auto positioning before you start dragging
+	    // }
+
+	    // function dragmove(d, i) {
+	    //     d.px += d3.event.dx;
+	    //     d.py += d3.event.dy;
+	    //     d.x += d3.event.dx;
+	    //     d.y += d3.event.dy; 
+	    //     tick(); // this is the key to make it work together with updating both px,py,x,y on d !
+	    // }
+
+	    // function dragend(d, i) {
+	    //     d.fixed = true; // of course set the node to fixed so the force doesn't include the node in its auto positioning stuff
+	    //     tick();
+	    //     simulation.resume();
+	    // }
+
+	    function dragstart(d) {
+	  		d3.select(this).raise().classed("active", true);
+		}
+
+		function dragged(d) {
+	  		d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+		}
+
+		function dragend(d) {
+	  		d3.select(this).classed("active", false);
+		}
+
+
+
+		
+
+		// nodeElements.call(d3.drag())
+		// 	.on("start", dragstarted)
+		// 	.on("drag", dragged)
+		// 	.on("end", dragended);
+
+		// function dragstarted(d) {
+		// 	d.fx = d.x; 
+		// 	d.fy = d.y; 
+		// }
+
+		// function dragged(d) {
+		// 	d.fx = d3.event.x; 
+		// 	d.fy = d3.event.y; 
+		// }
+
+		// function dragended(d) {
+		// 	if(!d3.event.active) {
+		// 		d.fx = d3.event.x; 
+		// 		d.fy = d3.event.y; 
+		// 	}
+
+		// }
+
+		var textElements = svg.append("g")
+			.attr("class", "texts")
+			.selectAll("text")
+			.data(nodes)
+			.enter().append("text")
+				.text(function(node) {return node.subject})	
+					.attr("font-size", 15)
+					.attr("dx", 15)
+				.attr("dy", 4)
+
+		simulation.nodes(nodes).on('tick', () => {
+			nodeElements
+				.attr('cx', function(node) {return node.x})
+				.attr('cy', function(node) {return node.y})
+			textElements
+				.attr('x', function(node) {return node.x})
+				.attr('y', function(node) {return node.y})
+			linkElements
+				.attr('x1', function(link) {return link.source.x})
+				.attr('y1', function(link) {return link.source.y})
+				.attr('x2', function(link) {return link.target.x})
+				.attr('y2', function(link) {return link.target.y})
+		})
+
+		function tick(){
+			linkElements
+				.attr('x1', function(link) {return link.source.x})
+				.attr('y1', function(link) {return link.source.y})
+				.attr('x2', function(link) {return link.target.x})
+				.attr('y2', function(link) {return link.target.y})
+	}
+
+	simulation.force("link").links(links)
+	return null;
+}
+	
+</script>
+
+

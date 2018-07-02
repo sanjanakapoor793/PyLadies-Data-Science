@@ -1,0 +1,9 @@
+Flask==0.12.2
+Flask-cors==3.0.4
+gensim==3.4.0
+nmslib==1.7.2
+nltk==3.2.5
+numpy==1.14.0
+pyLDAvis==2.1.1
+pymongo==3.4.0
+spacy==2.0.11
