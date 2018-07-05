@@ -3,7 +3,7 @@
 """
 Created on Tue Jul  3 14:09:57 2018
 
-@author: s0k00rp
+@author: Sanjana Kapoor
 """
 
 import text_pipeline
