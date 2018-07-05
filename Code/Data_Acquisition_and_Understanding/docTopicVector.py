@@ -5,19 +5,18 @@ Created on Thu May  3 14:17:11 2018
 
 @author: Sanjana Kapoor
 """
+from gensim import corpora
 from gensim.corpora.mmcorpus import MmCorpus
 from gensim.models import ldamodel
 from gensim.test.utils import datapath
-#import numpy
-import os
-from pymongo import MongoClient
 import numpy
+import os
 
 
 
 class DocumentTopicVectorStorage():
     
-    def __init__(self, lda_model_location):
+    def __init__(self, lda_model_location, corpus_location, database = 'mongo'):
         """
         Load LDAModel and Corpus from file locations sent. 
         
@@ -32,18 +31,22 @@ class DocumentTopicVectorStorage():
             Collection of Enron Emails
         
         """
+        self.next_steps = {'mongo': self.mongo}
+        
         self.lda = ldamodel.LdaModel.load(lda_model_location) 
-        emailClient = MongoClient()
-        self.db = emailClient[os.getenv('EMAIL_DATABASE_NAME')]
-        self.emailsCol = self.db[os.getenv('EMAIL_COLLECTION_NAME')]
+        self.corpus_location = corpus_location
         
+        if database == 'mongo': 
+            from pymongo import MongoClient
         
-    def print_info(self):
-        for c in self.corpus:
-            print(c)
+            emailClient = MongoClient()
+            self.db = emailClient[os.getenv('EMAIL_DATABASE_NAME')]
+            self.emailsCol = self.db[os.getenv('EMAIL_COLLECTION_NAME')]
+            
+        self.database = self.next_steps[database]
+
     
-    
-    def store_info(self):
+    def apply(self):
         """
         Generate Document Topic Vectors and pass to method to add to database.
         
@@ -56,48 +59,20 @@ class DocumentTopicVectorStorage():
         vector = [(counter, 0.0) if v[0] != counter else v for v in vector]
         
         """
-        print('here')
+
         counter = 0
-        print(self.emailsCol.count())
-        for email in self.emailsCol.find():
-            print('one')
-            vector = self.lda.get_document_topics(email['email_corpus_value'])
+        corpus = corpora.MmCorpus(self.corpus_location)
+        
+        for row in corpus:
+            vector = self.lda.get_document_topics(row)
             # MongoDB can't store numpy stuff. 
             # Must convert the float 32 in the second spot in the tuples in vector to native float
             vector = [tuple(map(float, v)) for v in vector]
-            print(counter)
-            vectorIter = iter(vector)
-            complete_vector = []
-            topic_counter = 0
-            num_topics = 50
-            v = next(vectorIter)
-            while topic_counter < num_topics:                     # iterating through all the tuples in the vector
-                if v[0] == topic_counter:                         # this topic number exists in the list
-                    complete_vector.append(v)                           # add this value. WE DON'T WANT TO LOSE IT
-                    topic_counter += 1                            # increase counter so cycle continues
-                    try:
-                        v = next(vectorIter)                # get next tuple
-                    except StopIteration:                   # we are at the end of the list 
-                        if topic_counter != num_topics:           # the list ended before hitting the 24th topic
-                                                                  # there were some topics left out on the end
-                            while topic_counter < num_topics:
-                                complete_vector.append((topic_counter, 0.00))
-                                topic_counter += 1
-                        else:
-                            pass
-                            continue
-                else:
-                    while topic_counter != v[0]:
-                        complete_vector.append((topic_counter, 0.00))
-                        topic_counter += 1
-            self.add_data(email['_id'], complete_vector, email['email_counter'])
-            print('done')
+            self.database(counter, vector)
             counter += 1
             
-    
-    
 
-    def add_data(self, docID, vector, counter):
+    def mongo(self, email_counter, vector):
         """
         Add data to database.
             
@@ -108,20 +83,10 @@ class DocumentTopicVectorStorage():
         
         """
         
-        self.emailsCol.update_one({'_id': docID}, {'$set': {
+        
+        self.emailsCol.update_one({'email_counter': email_counter}, {'$set': {
                     'topic_vector': vector}},
                     upsert = False)
-
-#        topicVectors = self.db.tVectors
-#        vectorValues = {
-#            '_id': docID,
-#            'topic_values': vector,
-#            'doc_counter': counter
-#        }
-#
-#        topicVectors.insert_one(vectorValues)
-        
-        
 
 #client = MongoClient()
 #client.drop_database('DocTopicVectors')

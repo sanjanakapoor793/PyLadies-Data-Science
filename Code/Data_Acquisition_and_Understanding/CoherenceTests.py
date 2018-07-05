@@ -15,7 +15,7 @@ from similarDoc import SimilarDoc
 
 class TestingModel():
     
-    def __init__(self, call_coherence, call_email_algebra, lda_filepath = None, texts_filepath = None, 
+    def __init__(self, call_coherence, call_email_algebra = False, lda_filepath = None, texts_filepath = None, 
                  coherence_measure = None, create_cm = False, cm_filepath = None, 
                  first_id = None, second_id = None, addition = True, num = None):
         

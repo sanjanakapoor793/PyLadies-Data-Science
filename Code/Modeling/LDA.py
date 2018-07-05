@@ -7,24 +7,20 @@ Created on Fri Apr 20 15:46:20 2018
 """
 
 #from store_data import EmailDataStorage 
-from Tokenizer import Tokenizer
-from TokenFilter import TokenFilter
-from Stemmer import Stemmer
 from gensim import corpora
 from gensim.corpora import Dictionary
 from gensim.models import ldamodel
-from nltk.corpus import stopwords
 import pyLDAvis 
 import pyLDAvis.gensim
 import pymongo
-from pymongo import MongoClient
 import pickle
 import re
 
 
 class LDAModelMaker():
     
-    def __init__(self, create_texts, texts_filepath, corpus_filepath, dictionary_filepath):
+    def __init__(self, create, texts_filepath, corpus_filepath, dictionary_filepath, lda_filepath, pyldavis_filepath, 
+                 database = None, **run_parameters):
         """
         Pull up information required for generating the LDA Model. 
         
@@ -43,120 +39,52 @@ class LDAModelMaker():
         
         """
         
-        emailClient = MongoClient()
-        self.db = emailClient['EnronEmailData']
-        self.col = self.db.emails
-        self.texts = []
+        self.next_steps = {'mongo': self.mongo}
+        
+        self.texts_filepath = texts_filepath
+        self.corpus_filepath = corpus_filepath
+        self.dictionary_filepath = dictionary_filepath
+        self.lda_filepath = lda_filepath
+        self.pyldavis_filepath = pyldavis_filepath
+        
 #        self.stopWords = set(stopwords.words('english'))
         self.dictionary = Dictionary()
+        self.run_parameters = run_parameters
 #        self.remove = '\!"#$%&()*+,-.:;<=>?@[^_`{|}~]'
-        
-        if eval(create_texts):
-            self.start_cleaning_process(texts_filepath, corpus_filepath, dictionary_filepath)
-            self.email_database_content()
+
+        if create: 
+            self.apply = self.create_corpus_dict
         else:
-            self.load_texts(texts_filepath)
-            self.load_corpus(corpus_filepath)
-            self.load_dictionary(dictionary_filepath)
-        
-
-    def start_cleaning_process(self, texts_filepath, corpus_filepath, dictionary_filepath):
-        """
-        Clean texts for later use. Pulls values from EnronEmailData database. Generates corpus and dictionary. 
-        
-        :param {str} texts_filepath: 
-            Where to save the generated texts to. 
-        
-        :param {str} corpus_filepath: 
-            Where to save the generated corpus to. 
+            self.apply = self.load_corpus_dict
             
-        :param {str} dictionary_filepath: 
-            Where to save generated dictionary to. 
+        if database:
+            self.update_database = self.next_steps[database]
+
+
+    def create_corpus_dict(self, texts):
+        self.texts = texts
+        self.save_texts(self.texts_filepath)
+        self.set_dict_corp()
         
-        """
-        self.col.create_index([("email_counter", pymongo.ASCENDING)])
-#        table = str.maketrans('', '', self.remove)
-        counter = 0
-        for email in self.col.find().sort('email_counter', pymongo.ASCENDING):
-            if email['email_counter'] != counter:
-                raise IndexError('the email_counter and the actual counter do not match up')
-            text_line = email['content']
-            self.texts.append(text_line)
-            counter += 1
-        print("FINISHED ADDING FILES TO SELF.TEXTS")
-        tokenizer = Tokenizer('spacy')
-        filterer = TokenFilter('spacy')
-        stemmer = Stemmer('spacy')
-        print("CREATED PARTS OF PIPELINE")
-        temp = tokenizer.apply(self.texts)
-        print('finished step1')
-        temp2 = filterer.apply(temp)
-        print('finished step2')
-        self.texts = stemmer.apply(temp2)
-        print("PIPELINE HAS FINISHED")
-        self.frequency_check(corpus_filepath, dictionary_filepath, texts_filepath)
+        self.database()
+        self.fit_LDA()
     
-
-    def clean_data(self, table, text):
-        """
-        Remove characters that aren't letters or numbers
-        
-        :param {str} text: 
-            container that has one email 
-        
-        :param table:
-            structure that maps the characters in self.remove to blank spaces
-        
-        """
-
-        clean_text = []
-        text = text.translate(table).lower()
-        text_array = text.split()
-        for token in text_array: 
-            token.replace('/hou', '').replace('/etc', '')
-            if token not in self.stopWords and len(token) > 1:
-                clean_text.append(token)
-        return clean_text
     
-
-    def frequency_check(self, corpus_filepath, dictionary_filepath, texts_filepath):
-        """
-        Remove tokens that only occur once in the entire corpus
+    def mongo(self):
+        import os
+        from pymongo import MongoClient
         
-        :param {str} corpus_filepath: 
-            Where to save the generated corpus to. 
-            
-        :param {str} dictionary_filepath: 
-            Where to save generated dictionary to. 
-        
-        """
-        # update frequencies of each value in the dict created below
-        frequency = {}
-        for text in self.texts:
-            for token in text:
-                if token in frequency:
-                    frequency[token] += 1
-                else:
-                    frequency[token] = 1
-        
-        # remove words that have a frequency of 1
-        self.texts = [[token for token in text if frequency[token] > 2] for text in self.texts]
-        print("SAVING SELF.TEXTS")
-        self.save_texts(texts_filepath)
-        print("SAVED SELF.TEXTS")
-        self.set_dict_corp(corpus_filepath, dictionary_filepath)
+        emailClient = MongoClient()
+        self.db = emailClient[os.getenv('EMAIL_DATABASE_NAME')]
+        self.col = self.db[os.getenv('EMAIL_COLLECTION_NAME')]
+        self.email_database_content()
     
-
-    def email_database_content(self):
-        """
-        Join each list in self.texts to form strings which can be later manipulated
-        to be stored in the email database. 
-        
-        Need to do this if calling setEmailDatabase
-        
-        """
-        self.texts = [' '.join(text) for text in self.texts]
-        self.set_email_database()
+    
+    def load_corpus_dict(self, useless):
+        self.texts = self.load_texts(self.texts_filepath)
+        self.dictionary = self.load_dictionary(self.dictionary_filepath)
+        self.corpus= self.load_corpus(self.corpus_filepath)
+        self.fit_LDA()
 
     
     def save_texts(self, filepath):
@@ -219,7 +147,7 @@ class LDAModelMaker():
                 with complete self.texts
             If not: don't worry about it
     """
-    def set_dict_corp(self, corpus_location, dictionary_location):
+    def set_dict_corp(self):
         """
             texts: container that has the lists of lists of strings for the dictionary
             
@@ -243,13 +171,10 @@ class LDAModelMaker():
         """
         self.dictionary.add_documents(self.texts) 
         # self.dictionary.save('../../../Enron/LDAVar/dictionary.dict')
-        self.dictionary.save(dictionary_location)
+        self.dictionary.save(self.dictionary_filepath)
         self.corpus = self.make_corpus()
-        print(len(self.corpus))
-        # don't need to serialize the corpus anymore b/c the data is in the email database
-        #corpora.MmCorpus.serialize('../../../Enron/LDAVar/corpus.mm', self.corpus)
-        corpora.MmCorpus.serialize(corpus_location, self.corpus)
-
+#        print(len(self.corpus))
+        corpora.MmCorpus.serialize(self.corpus_filepath, self.corpus)
 
     
     """ Maybe make an object out of this? Separate class maybe? """
@@ -260,6 +185,29 @@ class LDAModelMaker():
         """
         return [self.dictionary.doc2bow(text) for text in self.texts]
     
+    
+    def fit_LDA(self):
+        """ 
+        Fit data in LDA. currently assuming that number of cores remains constant at 1. 
+        
+        :param {str} lda_filepath: 
+            Where to save lda model to. 
+            
+        :param {str} pyldavis_filepath: 
+            Where to save pyldavis model to. 
+        
+        :param {int} num_topics: 
+            Number of topics the LDA model should look for. 
+            
+        """
+        self.get_run_param()
+        self.lda = ldamodel.LdaModel(corpus=self.corpus, alpha='auto', id2word=self.dictionary, #num_topics=num_topics, 
+                                     **self.run_parameters)
+        lda_vis_serialized = pyLDAvis.gensim.prepare(self.lda, self.corpus, self.dictionary, sort_topics = False)
+#        pyLDAvis.save_html(lda_vis_serialized, '../../../Enron/Result/ldaModelDaRealOne.html')
+        pyLDAvis.save_html(lda_vis_serialized, self.pyldavis_filepath)
+        self.lda.save(self.lda_filepath)
+
     
     def get_domain(self, list_filtered_emails, email):
         """ 
@@ -281,6 +229,18 @@ class LDAModelMaker():
             return None
         return domains
     
+
+    def email_database_content(self):
+        """
+        Join each list in self.texts to form strings which can be later manipulated
+        to be stored in the email database. 
+        
+        Need to do this if calling setEmailDatabase
+        
+        """
+        self.texts = [' '.join(text) for text in self.texts]
+        self.set_email_database()
+        
     
     def set_email_database(self):
         """
@@ -292,7 +252,6 @@ class LDAModelMaker():
         
         """ 
 
-        
         for email in self.col.find():
             try:
                 self.col.update_one({'_id': email['_id']}, {'$set': {
@@ -306,56 +265,8 @@ class LDAModelMaker():
                 print(email['_id'])
                 
     
-    def fit_LDA(self, lda_filepath, pyldavis_filepath, num_topics):
-        """ 
-        Fit data in LDA. currently assuming that number of cores remains constant at 1. 
-        
-        :param {str} lda_filepath: 
-            Where to save lda model to. 
-            
-        :param {str} pyldavis_filepath: 
-            Where to save pyldavis model to. 
-        
-        :param {int} num_topics: 
-            Number of topics the LDA model should look for. 
-            
-        """
-        self.get_run_param()
-        self.lda = ldamodel.LdaModel(corpus=self.corpus, alpha='auto', id2word=self.dictionary, num_topics=num_topics, 
-                                     minimum_probability = 0.00, passes = 5, **self.run_parameters)
-        lda_vis_serialized = pyLDAvis.gensim.prepare(self.lda, self.corpus, self.dictionary, sort_topics = False)
-#        pyLDAvis.save_html(lda_vis_serialized, '../../../Enron/Result/ldaModelDaRealOne.html')
-        pyLDAvis.save_html(lda_vis_serialized, pyldavis_filepath)
-        self.lda.save(lda_filepath)
     
-    
-    def save_LDA(self, lda_filepath):
-        """ save lda model in the directory given by the filepath 
-        
-        :param {str} lda_filepath: 
-            Filepath of where to save lda model to.
 
-        """
-        # self.lda.save('../../../Enron/LDAResult/ldaModel')
-        self.lda.save(lda_filepath)
-    
-    
-    def get_run_param(self):
-        """
-            This method will be used for generating the run parameters required
-                this test. 
-                Rachel used json.load(...). Ask her about it next Thurs
-        """
-            
-        """ Just have simple input for user or they can just manually change code """
-        #self.run_parameters = {'cores': 1} 
-        self.run_parameters = {}
-        
-        
-    def print_database(self):
-        for email in self.col.find():
-            print(email)
-            print("\n")
 
 
 if __name__ == "__main__":
