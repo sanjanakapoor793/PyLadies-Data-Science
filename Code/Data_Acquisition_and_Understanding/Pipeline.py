@@ -17,5 +17,5 @@ class Pipeline():
     def apply(self, result):
         for step in self.steps:
             result = step.apply(result)
-        # probably won't need this line. just so i can get rid of that warning
+        # probably won't need this line.
         return result
