@@ -6,8 +6,8 @@ Created on Tue Jul  3 14:09:57 2018
 @author: Sanjana Kapoor
 """
 
-import text_pipeline
 
+import text_pipeline
 from Pipeline import Pipeline
 from store_data import EmailDataStorage
 from LDA import LDAModelMaker
@@ -16,32 +16,34 @@ from CoherenceTests import TestingModel
 
 emails = EmailDataStorage()
 
-#tokenizer = text_pipeline.Tokenizer('spacy')
-#token_filter = text_pipeline.TokenFilter('spacy')
-#stemmer = text_pipeline.Stemmer('spacy')
-#pre_processing = text_pipeline.Pipeline(tokenizer, token_filter, stemmer)
+tokenizer = text_pipeline.Tokenizer('spacy')
+token_filter = text_pipeline.TokenFilter('spacy')
+stemmer = text_pipeline.Stemmer('spacy')
+pre_processing = text_pipeline.Pipeline(tokenizer, token_filter, stemmer)
+
+filepath = 'filepath'
 
 
 lda = LDAModelMaker(create = False, 
-                    texts_filepath = '/data1/enron/results/third_run/texts.txt', 
-                    corpus_filepath = '/data1/enron/results/third_run/corpus.mm', 
-                    dictionary_filepath = '/data1/enron/results/third_run/dictionary.dict', 
-                    lda_filepath = '/data1/enron/results/fourth_run/ldamodel', 
-                    pyldavis_filepath = '/data1/enron/results/fourth_run/pyldavis.html', 
+                    texts_filepath = filepath, 
+                    corpus_filepath = filepath, 
+                    dictionary_filepath = filepath, 
+                    lda_filepath = filepath, 
+                    pyldavis_filepath = filepath, 
                     database = 'mongo', 
                     num_topics = 35, 
                     minimum_probability = 0.00, 
                     passes = 5)
 
-dtv = DocumentTopicVectorStorage(lda_model_location = '/data1/enron/results/fourth_run/ldamodel', 
-                                 corpus_location = '/data1/enron/results/third_run/corpus.mm', 
+doc_topic_v = DocumentTopicVectorStorage(lda_model_location = filepath, 
+                                 corpus_location = filepath, 
                                  database = 'mongo')
 
 cm = TestingModel(call_coherence = True, 
-                  lda_filepath = '/data1/enron/results/fourth_run/ldamodel', 
-                  texts_filepath = '/data1/enron/results/third_run/texts.txt', 
+                  lda_filepath = filepath, 
+                  texts_filepath = filepath, 
                   coherence_measure = 'c_v', 
                   create_cm = True, 
-                  cm_filepath = '/data1/enron/results/fourth_run/cm.cv')
+                  cm_filepath = filepath)
 
-complete_pipeline = Pipeline(emails, lda, dtv, cm)
+pyladies_pipeline = Pipeline(emails, lda, doc_topic_v, cm)

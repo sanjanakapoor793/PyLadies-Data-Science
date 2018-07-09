@@ -32,11 +32,18 @@ class EmailDataStorage():
         self.apply = self.next_step[reading_process]
         self.store = self.next_step[database]
         
-        
         self.result = []
         
         
     def csv(self, filepath):
+        """
+        Read in data from .csv files. 
+        
+        :param {str} filepath:
+            Filepath to the current set of data being added to the database
+        
+        """
+        
         import csv
         import io
         
@@ -62,7 +69,6 @@ class EmailDataStorage():
                                 self.store(row)
                         # if something can't be read, we should ignore that row and
                         # keep going with the rest of the file
-                        
                         except IndexError:
                             pass
                         except UnicodeEncodeError as e:

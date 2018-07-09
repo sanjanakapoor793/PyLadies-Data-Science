@@ -12,7 +12,6 @@ from gensim.corpora import Dictionary
 from gensim.models import ldamodel
 import pyLDAvis 
 import pyLDAvis.gensim
-import pymongo
 import pickle
 import re
 
@@ -24,7 +23,7 @@ class LDAModelMaker():
         """
         Pull up information required for generating the LDA Model. 
         
-        :param {boolean} create_texts:
+        :param {boolean} create:
             Whether or not we must create texts. 
         
         :param {str} texts_filepath: 
@@ -37,6 +36,14 @@ class LDAModelMaker():
         :param {str} dictionary_filepath: 
             Location of where we must save or load the dictionary from. 
         
+        :param {str} lda_filepath: 
+            Location of where we must save the lda model to. 
+            
+        :param {str} pyldavis_filepath: 
+            Location of where we must save the pyldavis to.
+        
+        :param {str} database: 
+            Which kind of database we will be using. 
         """
         
         self.next_steps = {'mongo': self.mongo}
@@ -46,11 +53,9 @@ class LDAModelMaker():
         self.dictionary_filepath = dictionary_filepath
         self.lda_filepath = lda_filepath
         self.pyldavis_filepath = pyldavis_filepath
-        
-#        self.stopWords = set(stopwords.words('english'))
+
         self.dictionary = Dictionary()
         self.run_parameters = run_parameters
-#        self.remove = '\!"#$%&()*+,-.:;<=>?@[^_`{|}~]'
 
         if create: 
             self.apply = self.create_corpus_dict
@@ -62,8 +67,16 @@ class LDAModelMaker():
 
 
     def create_corpus_dict(self, texts):
+        """
+        Save texts, dictionary, and corpus. Generate and save lda & pyldavis model. 
+        
+        :param {list[list[str]]} texts:
+            Tokenized words
+        
+        """
+        
         self.texts = texts
-        self.save_texts(self.texts_filepath)
+        self.save_texts()
         self.set_dict_corp()
         
         self.database()
@@ -81,63 +94,45 @@ class LDAModelMaker():
     
     
     def load_corpus_dict(self, useless):
-        self.texts = self.load_texts(self.texts_filepath)
-        self.dictionary = self.load_dictionary(self.dictionary_filepath)
-        self.corpus= self.load_corpus(self.corpus_filepath)
+        self.texts = self.load_texts()
+        self.dictionary = self.load_dictionary()
+        self.corpus= self.load_corpus()
         self.fit_LDA()
 
     
-    def save_texts(self, filepath):
+    def save_texts(self):
         """
         Save self.texts to a file so we don't have to keep re-computing
-        
-        :param {str} filepath:
-            Filepath of where to save information. 
 
         """
-        # filepath = '../../../Enron/Texts/texts.txt'
-        
-        with open(filepath, 'wb') as save:
+        with open(self.texts_filepath, 'wb') as save:
             pickle.dump(self.texts, save)
             
     
-    def load_texts(self, filepath):
+    def load_texts(self):
         """
         Load self.texts from a file it was saved to earlier.
-        
-        :param {str} filepath:
-            Filepath of where to load information from. 
 
         """
-        # filepath = '../../../Enron/Texts/texts.txt'
-        
-        with open(filepath, 'rb') as save:
+        with open(self.texts_filepath, 'rb') as save:
             self.texts = pickle.load(save)
-        print(len(self.texts))
+#        print(len(self.texts))
     
     
-    def load_dictionary(self, dictionary_location):
+    def load_dictionary(self):
         """
         Load self.dictionary from a file it was saved to earlier. 
-
-        :param {str} dictionary_location: 
-            Filepath of where to load information from. 
         
         """
-        # dictionaryLocation = '../../../Enron/LDAVar/dictionary.dict'
-        self.dictionary = self.dictionary.load(dictionary_location)
+        self.dictionary = self.dictionary.load(self.dictionary_filepath)
     
     
-    def load_corpus(self, corpus_location):
+    def load_corpus(self):
         """
         Load self.corpus from a file it was saved to earlier.
-        
-        :param {str} corpus_location: 
-            Filepath of where to load information from. 
 
         """
-        # corpusLocation = '../../../Enron/LDAVar/corpus.mm'
-        self.corpus = corpora.MmCorpus(corpus_location)
+        self.corpus = corpora.MmCorpus(self.corpus_filepath)
             
             
     """
@@ -149,14 +144,6 @@ class LDAModelMaker():
     """
     def set_dict_corp(self):
         """
-            texts: container that has the lists of lists of strings for the dictionary
-            
-            :param {str} dictionary_location: 
-                Filepath of where to load information from. 
-            
-            :param {str} corpus_location: 
-                Filepath of where to load information from. 
-
             AT THE END OF THIS METHOD:
                 self.dictionary will be updated with the new values
                 self.corpus will have a new value that will be an updated version

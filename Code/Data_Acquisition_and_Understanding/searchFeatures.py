@@ -16,7 +16,7 @@ import operator
 
 class SearchFeatures():
     
-    def __init__(self, keyword, topic_search, words, dict_filepath = None, lda_filepath = None, 
+    def __init__(self, keyword, topic_search, *words, dict_filepath = None, lda_filepath = None, 
                  index_filepath = None, create_index = False):
         """
         Record what kind of search to do. 

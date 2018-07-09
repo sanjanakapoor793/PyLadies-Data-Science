@@ -8,8 +8,6 @@ Created on Thu May  3 14:17:11 2018
 from gensim import corpora
 from gensim.corpora.mmcorpus import MmCorpus
 from gensim.models import ldamodel
-from gensim.test.utils import datapath
-import numpy
 import os
 
 
@@ -21,7 +19,13 @@ class DocumentTopicVectorStorage():
         Load LDAModel and Corpus from file locations sent. 
         
         :param {str} lda_model_location:
-            Filepath to the LDAModel
+            Filepath to the LDAModel.
+        
+        :param {str} corpus_location:
+            Filepath to the corpus.
+        
+        :param {str} database:
+            Type of database used. 
 
         self.lda:
             Stores the LDA Model generated earlier
@@ -52,10 +56,6 @@ class DocumentTopicVectorStorage():
         
         TO-DO: 
             
-        Figure out how to store num_topics here
-            
-        figure out how to increment counter in a synthesized for loop
-        counter = 0
         vector = [(counter, 0.0) if v[0] != counter else v for v in vector]
         
         """
@@ -76,8 +76,8 @@ class DocumentTopicVectorStorage():
         """
         Add data to database.
             
-        :param {int} doc_id:
-            ID of document being placed in the database. Will be used as _id
+        :param {int} email_counter:
+            Way of identifying a document being placed in the database. Will be used as email_counter in database
         :param {list of tuples} vector:
             List of tuples that indicate the topic distribution for that document
         

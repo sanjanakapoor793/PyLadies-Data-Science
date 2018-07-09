@@ -61,7 +61,7 @@ class SimilarDoc():
 
         """
         
-        self.emailCol.create_index([("email_counter", pymongo.ASCENDING)])
+        self.emailCol.create_index([('email_counter', pymongo.ASCENDING)])
         index = nms.init(method = 'hnsw', space = 'cosinesimil')
         # need to add in all the document_topic_vectors
         # Must be sorted for when retrieving _id based on the index of the document in self.index
@@ -94,9 +94,6 @@ class SimilarDoc():
         :param {list} curr_vector:
             Document topic vector for the base document (the document we start off with).
         
-        :param {int} num:
-            number of similar documents whose ID's should be returned
-        
         """
         
         nearest_n, distances = self.index.knnQuery(curr_vector, 20)
@@ -112,9 +109,11 @@ class SimilarDoc():
         """
         Save the index to a given location
         
+        :param {str} filepath: 
+            Location of where to save the index to. 
+        
         """
-        # will later be a value passed in 
-#        filepath = '../../../Enron/NMSLIB/index.hnsw' 
+        
         # save the index so we don't have to go through the long process of 'index.createIndex'
         self.index.saveIndex(filepath)
 
@@ -122,20 +121,17 @@ class SimilarDoc():
     def load_index(self, filepath):
         """ 
         Load the index from the given location
+        
+        :param {str} filepath: 
+            Location of where to load filepath from.
                 
         """
+        
         index = nms.init(method = 'hnsw', space = 'cosinesimil')
         # this should later be a variable 
 #        filepath = '../../../Enron/NMSLIB/index.hnsw'
         index.loadIndex(filepath)
         return index
-    
-    
-    def tester_method(self, docVec):
-        print(type(self.locations))
-        for key, val in self.locations.items():
-            if(val == docVec):
-                print(key)
                 
 
 if __name__ == "__main__":
