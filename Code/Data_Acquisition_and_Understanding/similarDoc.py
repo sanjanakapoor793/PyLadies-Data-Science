@@ -17,11 +17,11 @@ class SimilarDoc():
     def __init__(self, index_filepath, create_index = False):
         """ Set up all the databases that will be used 
         
-        :param {str} index_filepath: 
-            Location of where to load or save index from/to. 
-            
-        :param {bool} create_index:
-            Determines whether or not a new index has to be made
+            :param {str} index_filepath: 
+                Location of where to load or save index from/to. 
+                
+            :param {bool} create_index:
+                Determines whether or not a new index has to be made
         
         self.emailDB:
             Stores the database EnronEmailData
@@ -74,7 +74,7 @@ class SimilarDoc():
         
     def similar_from_id(self, document_id):
         """
-        Runs nearest neighbors to find the num closest documents given the document's id. 
+        Runs nearest neighbors to find the closest documents given the document's id. 
             
         :param {str} document_id:
             _id that corresponds to a document in the DocTopicVectors database 

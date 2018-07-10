@@ -188,54 +188,83 @@ Generate / fit the LDA model. Both the model generated and a pyLDAvis representa
 This method has no parameters.
 
 
-3. docTopicVector.py in the Data_Aquisition... folder. 
+## docTopicVector.py
 
-Parameters: 
+##### Class Parameters: 
+* lda_model_location (str): Filepath to the LDAModel.
+* corpus_location (str): Filepath to the corpus.
+* database (str): Type of database used. Default to MongoDB. 
 
-:param {str} lda_model_location:
-    Filepath to the LDAModel
+End result: The topic vectors for each document will be stored in the database under field 'topic_vector'. 
 
-End result: The topic vectors for each document will be stored in a separate database. One thing to note is that the _id in this database will also be the unique ID found in the CSV files. So the _id is the same in the emails and topic vectors database. This will be important as we will use this feature when trying to access both sets of information. 
+#### apply(self)
+Load the corpus and iterate through it. For each row in the corpus, generate the document topic vector for that document and store it in the database. 
 
-4. similarDoc.py in the Data_Aquisition... folder. 
+This method has no parameters. 
 
-Parameters: 
+#### mongo(self, email_counter, vector)
+Update each document in the database with the appropriate topic vector. 
 
-:param {str} index_filepath: 
-	Location of where to load or save index from/to. 
-            
-:param {bool} create_index:
-	Determines whether or not a new index has to be made
+##### Parameters: 
+* email_counter (int): Way of identifying a document being placed in the database. Will be used as email_counter in database
+* vector (list[tuples]): List of tuples that indicate the topic distribution for that document
 
-End result: This file finds the nearest neighbors to a particular document or topic vector. We will use this in the future when conducting semantic searches (searches related to the topic vectors of a document and the words being searched). 
+## similarDoc.py 
 
-5. searchFeatures.py in the Data_Aquisition... folder. 
+##### Class Parameters: 
+* index_filepath (str): Location of where to load or save index from/to. 
+* create_index {bool}: Determines whether or not a new index has to be made. Default is False. 
 
-Parameters: 
+Finds the nearest neighbors to a particular document or topic vector. We will use this in the future when conducting semantic searches (searches related to the topic vectors of a document and the words being searched). 
 
-:param {boolean} keyword: 
-	True if user wants to do a keyword search for the exact word in the text. 
-            
-:param {boolean} topic_search:
-	True if user wants to do a topic search for the exact word in the text
-            
-:param {varies} *words:
-	Words that the user wants to search by. 
-            
-:param {int} num:
-	Number of documents the user wants returned
-            
-:param {str} dict_filepath: 
-	Where to load dictionary from
-        
-:param {str} lda_filepath: 
-	Where to load LDA Model from
-        
-:param {str} index_filepath: 
-	Where to load/save index to. 
-        
-:param {str} create_index:
-	Whether or not we need to create a new index. 
+#### set_up(self)
+Add documents to index, create index, and then return to __init__
 
-End result: If keyword (bool) is true, then num (int) number of documents that contain the words passed in will be returned. 
-If topic_search is true, the num (int) number of documents that are similar to the topic vector of the words will be returned. 
+This method has no parameters. 
+
+#### similar_from_id(self, document_id)
+Runs nearest neighbors to find the closest documents given the document's id. 
+
+##### Parameters:   
+* document_id (str): _id that corresponds to a document in the DocTopicVectors database. 
+
+#### similar_from_topic_vector(self, curr_vector)
+Runs nearest neighbors to find the num closest documents given the vector. 
+
+##### Parameters: 
+* curr_vector (list[tuples]): Document topic vector for the base document (the document we start off with). 
+
+#### save_index(self, filepath)
+Save the index to a given location. 
+
+##### Parameters:
+* filepath (str): Location of where to save the index to. 
+
+#### load_index(self, filepath)
+Load the index from the given location. 
+
+##### Parameters: 
+* filepath (str): Location of where to load the index from. 
+
+
+## searchFeatures.py 
+
+##### Class Parameters: 
+* keyword (boolean): True if user wants to do a keyword search for the exact word in the text. 
+* topic_search (boolean): True if user wants to do a topic search for the exact word in the text
+* *words (list[str]): Words that the user wants to search by. 
+* dict_filepath (str): Where to load dictionary from
+* lda_filepath (str): Where to load LDA Model from
+* index_filepath (str): Where to load/save index to. 
+* create_index (str): Whether or not we need to create a new index. 
+
+If keyword (bool) is true, then 20 documents that contain the words passed in will be returned. If topic_search is true, then 20 documents that are similar to the topic vector of the words will be returned. 
+
+#### semantic_search(self, dict_filepath, lda_filepath, index_filepath, create_index)
+Generates a topic vector based off the words inputted by the user. Use this topic vector to find num nearest neighbors. 
+
+##### Parameters: 
+dict_filepath (str): Where to load dictionary from
+lda_filepath (str): Where to load LDA Model from
+index_filepath (str): Where to load/save index to. 
+create_index (boolean): Whether or not we need to create a new index. 
