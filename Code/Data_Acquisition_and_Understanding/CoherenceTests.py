@@ -79,7 +79,6 @@ class TestingModel():
             Filepath of where to load information from. 
 
         """
-        # filepath = '../../../Enron/Texts/texts.txt'
         
         with open(filepath, 'rb') as save:
             self.texts = pickle.load(save)
