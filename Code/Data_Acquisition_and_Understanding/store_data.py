@@ -12,10 +12,9 @@ import os
 
 class EmailDataStorage():
     """ 
-    Object made to store data in a database
+    First step in the Pipeline process. Moves the data from .csv files to Mongo DB. 
     
     """
-    
     
     def __init__(self, reading_process = 'csv', database = 'mongo'):
         """
@@ -28,10 +27,8 @@ class EmailDataStorage():
         
         self.next_step = {'csv': self.csv, 
                          'mongo': self.mongo}
-        
         self.apply = self.next_step[reading_process]
         self.store = self.next_step[database]
-        
         self.result = []
         
         
