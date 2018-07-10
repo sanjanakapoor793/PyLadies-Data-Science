@@ -95,6 +95,14 @@ class LDAModelMaker():
     
     
     def load_corpus_dict(self, useless):
+        """
+            Load up the saved texts, dictionary, and corpus. Use them to generate a LDAModel. 
+            
+            :param {?} useless: 
+                There currently isn't any use of this parameter. 
+        
+        """
+        
         self.texts = self.load_texts()
         self.dictionary = self.load_dictionary()
         self.corpus= self.load_corpus()
@@ -106,6 +114,7 @@ class LDAModelMaker():
         Save self.texts to a file so we don't have to keep re-computing
 
         """
+        
         with open(self.texts_filepath, 'wb') as save:
             pickle.dump(self.texts, save)
             
@@ -115,6 +124,7 @@ class LDAModelMaker():
         Load self.texts from a file it was saved to earlier.
 
         """
+        
         with open(self.texts_filepath, 'rb') as save:
             self.texts = pickle.load(save)
 
@@ -124,6 +134,7 @@ class LDAModelMaker():
         Load self.dictionary from a file it was saved to earlier. 
         
         """
+        
         self.dictionary = self.dictionary.load(self.dictionary_filepath)
     
     
@@ -132,6 +143,7 @@ class LDAModelMaker():
         Load self.corpus from a file it was saved to earlier.
 
         """
+        
         self.corpus = corpora.MmCorpus(self.corpus_filepath)
             
             
@@ -177,15 +189,6 @@ class LDAModelMaker():
     def fit_LDA(self):
         """ 
         Fit data in LDA. currently assuming that number of cores remains constant at 1. 
-        
-        :param {str} lda_filepath: 
-            Where to save lda model to. 
-            
-        :param {str} pyldavis_filepath: 
-            Where to save pyldavis model to. 
-        
-        :param {int} num_topics: 
-            Number of topics the LDA model should look for. 
             
         """
 
