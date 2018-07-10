@@ -46,6 +46,11 @@ Calls a step in the pipeline.
 
 ## store_data.py 
 
+<pre>
+<i> class </i> EmailDataStorage(<i>reading_process</i> = 'csv', <i>database</i> = 'mongo')
+</pre>
+
+
 This file reads the data and puts it into a database. Both the type of file the code reads the data from and the database to use have to be set when creating the object. Currently, the type of file defaults to csv and the database defaults to MongoDB. 
 
 The _id will be the unique ID each email has. 
@@ -105,6 +110,11 @@ This method removes repeated sets of characters that add no meaning to the messa
 
 
 ## LDA.py 
+
+<pre>
+<i> class </i> LDAModelMaker(<I>create</I>, <I>texts_filepath</I>, <I>corpus_filepath</I>, <I>dictionary_filepath</I>, <I>lda_filepath</I>, 
+    <I>pyldavis_filepath</I>, <I>database</I> = None, <I>**run_parameters</I>)
+</pre>
 
 This class will use a dictionary and corpus to generate a LDA Model that will be used for future analysis. 
 
@@ -190,6 +200,10 @@ This method has no parameters.
 
 ## docTopicVector.py
 
+<pre>
+<I> class </I> DocumentTopicVectorStorage(<I>lda_model_location</I>, <I>corpus_location</I>, <I>database</I> = 'mongo')
+</pre>
+
 ##### Class Parameters: 
 * lda_model_location (str): Filepath to the LDAModel.
 * corpus_location (str): Filepath to the corpus.
@@ -210,6 +224,10 @@ Update each document in the database with the appropriate topic vector.
 * vector (list[tuples]): List of tuples that indicate the topic distribution for that document
 
 ## similarDoc.py 
+
+<pre>
+<I> class </I> SimilarDoc(<I>index_filepath</I>, <I>create_index</I> = False)
+</pre>
 
 ##### Class Parameters: 
 * index_filepath (str): Location of where to load or save index from/to. 
@@ -249,6 +267,10 @@ Load the index from the given location.
 
 ## searchFeatures.py 
 
+<pre> 
+<I> class </I>(<I>keyword</I>, <I>topic_search</I>, <I>*words</I>, <I>dict_filepath</I> = None, <I>lda_filepath</I> = None, 
+                 <I>index_filepath</I> = None, <I>create_index</I> = False)
+</pre>
 ##### Class Parameters: 
 * keyword (boolean): True if user wants to do a keyword search for the exact word in the text. 
 * topic_search (boolean): True if user wants to do a topic search for the exact word in the text
