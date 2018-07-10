@@ -25,7 +25,7 @@ Latent Dirichlet Allocation (LDA) is a model that analyzes unobserved groups and
 
 ## Pipeline Process
 
-![Screenshot](TopicModelingDataProcess.png)
+![Screenshot](Images/TopicModelingDataProcess.png)
 
 In the visual, three different steps are shown: 
 * Extract, Transform, Load
@@ -53,7 +53,7 @@ The above code snippet shows how to generate a document topic vector. First, you
 
 Below is the format of a BoW representation of a document. 
 
-![Screenshot](BagOfWords.png)
+![Screenshot](Images/BagOfWords.png)
 
 Now that we have our BoW representation of the document ready, we will call the get_document_topics method on the ldamodel and pass in our BoW as the parameter. 
 This will return the document's topic vector. 
@@ -62,7 +62,7 @@ This will return the document's topic vector.
 
 Nearest Neighbors Search is defined as the process of finding points from a given set that are most similar to your starting point. 
 
-![Screenshot](NearestNeighbors.png)
+![Screenshot](Images/NearestNeighbors.png)
 
 Looking at the image above, you can identify the starting point as the center data point and the 5 nearest neighbors as the data points closest to the starting point. This is a simple illustration of how nearest neighbors works. When doing a nearest neighbors search with your corpus, instead of comparing 2D points like in the image, you'll be comparing N-D points, where N is the number of topics you set your LDA Model to find.
 
