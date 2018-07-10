@@ -7,6 +7,11 @@ Created on Tue Jul  3 14:09:57 2018
 """
 
 
+filepath = 'filepath'
+
+
+
+
 import text_pipeline
 from Pipeline import Pipeline
 from store_data import EmailDataStorage
@@ -21,10 +26,8 @@ token_filter = text_pipeline.TokenFilter('spacy')
 stemmer = text_pipeline.Stemmer('spacy')
 pre_processing = text_pipeline.Pipeline(tokenizer, token_filter, stemmer)
 
-filepath = 'filepath'
 
-
-lda = LDAModelMaker(create = False, 
+lda = LDAModelMaker(create = True, 
                     texts_filepath = filepath, 
                     corpus_filepath = filepath, 
                     dictionary_filepath = filepath, 
@@ -35,15 +38,29 @@ lda = LDAModelMaker(create = False,
                     minimum_probability = 0.00, 
                     passes = 5)
 
-doc_topic_v = DocumentTopicVectorStorage(lda_model_location = filepath, 
-                                 corpus_location = filepath, 
-                                 database = 'mongo')
+pyladies_pipeline = Pipeline(emails, pre_processing, lda)
 
-cm = TestingModel(call_coherence = True, 
-                  lda_filepath = filepath, 
-                  texts_filepath = filepath, 
-                  coherence_measure = 'c_v', 
-                  create_cm = True, 
-                  cm_filepath = filepath)
 
-pyladies_pipeline = Pipeline(emails, lda, doc_topic_v, cm)
+
+
+
+
+
+
+# =============================================================================
+# You can add more steps to your Pipeline. 
+# Adding these 2 classes will remove 2 steps you will probably end up having to do. 
+#
+#
+#
+# doc_topic_v = DocumentTopicVectorStorage(lda_model_location = filepath, 
+#                                  corpus_location = filepath, 
+#                                  database = 'mongo')
+# 
+# cm = TestingModel(call_coherence = True, 
+#                   lda_filepath = filepath, 
+#                   texts_filepath = filepath, 
+#                   coherence_measure = 'c_v', 
+#                   create_cm = True, 
+#                   cm_filepath = filepath)
+# =============================================================================
