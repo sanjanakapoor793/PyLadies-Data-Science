@@ -11,7 +11,6 @@ from gensim.models import ldamodel
 import os
 
 
-
 class DocumentTopicVectorStorage():
     
     def __init__(self, lda_model_location, corpus_location, database = 'mongo'):
@@ -35,8 +34,8 @@ class DocumentTopicVectorStorage():
             Collection of Enron Emails
         
         """
-        self.next_steps = {'mongo': self.mongo}
         
+        self.next_steps = {'mongo': self.mongo}
         self.lda = ldamodel.LdaModel.load(lda_model_location) 
         self.corpus_location = corpus_location
         
@@ -83,13 +82,9 @@ class DocumentTopicVectorStorage():
         
         """
         
-        
         self.emailsCol.update_one({'email_counter': email_counter}, {'$set': {
                     'topic_vector': vector}},
                     upsert = False)
-
-#client = MongoClient()
-#client.drop_database('DocTopicVectors')
 
 
 if __name__ == "__main__":
@@ -100,8 +95,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Save document topic vectors')
     parser.add_argument('-l', required = True)
     args = parser.parse_args()
-    print('first')
     topic_vector_storage = DocumentTopicVectorStorage(args.l)
-    print('second')
     topic_vector_storage.store_info()
 
