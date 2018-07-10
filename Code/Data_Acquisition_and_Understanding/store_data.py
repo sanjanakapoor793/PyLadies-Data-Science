@@ -81,7 +81,6 @@ class EmailDataStorage():
         
         return self.result
         
-
     
     def mongo(self, row):
         """
@@ -125,7 +124,6 @@ class EmailDataStorage():
         except pymongo.errors.DuplicateKeyError:
             print("Duplicate Key Error")
         
-
 
     def clean_emails(self, row, sender_recip):
         """
