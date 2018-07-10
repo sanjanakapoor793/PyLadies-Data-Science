@@ -32,7 +32,7 @@ lda = LDAModelMaker(create = True,
                     minimum_probability = 0.00, 
                     passes = 5)
 
-pyladies_pipeline = Pipeline(emails, pre_processing, lda)
+topic_model_pipeline = Pipeline(emails, pre_processing, lda)
 ```
 
 In the code snippet above, emails, pre_processing, and lda were instantiated and then passed in as parameters to the Pipeline class.
