@@ -161,6 +161,7 @@ class EmailDataStorage():
             Content of one (singular) email
         
         """
+        
         cleaned_content = unfiltered_content.replace('=20', '').replace('=09', '').strip()
         return cleaned_content
         
