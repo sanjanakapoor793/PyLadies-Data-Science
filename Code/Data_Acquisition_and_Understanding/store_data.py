@@ -57,7 +57,6 @@ class EmailDataStorage():
                     for row in mult_emails:
                         num_row += 1
                         try:
-    #                        if row[0] != '' and row[1][0] == '<':
                             if row[0] != '' and row[0].isdigit():
                                 if row[0] != num_added:
                                     raise IndexError('the email_counter and the actual counter do not match up')
