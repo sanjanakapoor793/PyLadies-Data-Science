@@ -25,7 +25,7 @@ Latent Dirichlet Allocation (LDA) is a model that analyzes unobserved groups and
 
 ## Pipeline Process
 
-[Pipeline Process](TopicModelingDataProcess.png)
+![Screenshot](TopicModelingDataProcess.png)
 
 ## Data_Acquisition_and_Understanding
 
