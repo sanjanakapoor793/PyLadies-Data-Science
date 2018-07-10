@@ -145,7 +145,6 @@ class TestingModel():
         """
         
         first_vec, second_vec = self.get_vectors(document_topic_vectors, first_id, second_id)
-        
         diff_vec = self.vec_add_sub(first_vec, second_vec, addition)
         similar_emails, distances = similar_emails_finder.similar_from_topic_vector(diff_vec, num)
         
@@ -167,6 +166,7 @@ class TestingModel():
             ID of one of the email vectors that we are comparing. 
         
         """
+        
         first_vec = document_topic_vectors.find_one({'_id': first_id})
         second_vec = document_topic_vectors.find_one({'_id': second_id})
         return first_vec, second_vec
@@ -218,12 +218,3 @@ if __name__ == "__main__":
     tester = TestingModel(call_coherence = args.c, call_email_algebra = args.a, lda_filepath = args.l, texts_filepath = args.t, 
                           coherence_measure = args.m, create_cm = args.mc, cm_filepath = args.cf, first_id = args.f, 
                           second_id = args.s, addition = args.a, num = args.n)
-#    print("THE SAVING HAS FINISHED")
-#    tester.fit_LDA(lda_filepath = args.l, pyldavis_filepath = args.p, num_topics = args.n)
-#    print('finished')
-
-#tester = TestingModel(True, False, lda_filepath = '../../../Enron/Tester/ldamodel_topics_35_folder/ldamodel_topics_35', 
-#                      texts_filepath = '../../../Enron/Texts/original/texts.txt',
-#                      coherence_measure = 'c_v', create_cm = True, 
-#                      cm_filepath = '../../../Enron/Coherence/cv_topics_35.cv')
-#tester.coherence_test('u_mass', '../../../Enron/Coherence/co1.cv')

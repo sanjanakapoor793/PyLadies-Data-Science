@@ -31,6 +31,7 @@ class SimilarDoc():
             Secondary index to help go through self.emailCol in ascending order according to the counter (doc_counter)
         self.index: 
             Index for NMSLIB
+            
         """
 
         client = MongoClient()
@@ -57,7 +58,7 @@ class SimilarDoc():
     def set_up(self):
         """
         Add documents to index, create index, and then return to __init__
-        Adding the id returned by .addDataPoint
+        Adding the id returned by .addDataPoint()
 
         """
         
@@ -85,7 +86,6 @@ class SimilarDoc():
         result, distances = self.similar_from_topic_vector(curr_vector)
         return result, distances
         
-    
     
     def similar_from_topic_vector(self, curr_vector):
         """
@@ -128,8 +128,6 @@ class SimilarDoc():
         """
         
         index = nms.init(method = 'hnsw', space = 'cosinesimil')
-        # this should later be a variable 
-#        filepath = '../../../Enron/NMSLIB/index.hnsw'
         index.loadIndex(filepath)
         return index
                 
@@ -148,21 +146,3 @@ if __name__ == "__main__":
     results, distances = tester.similar_from_id(document_id = args.s)
     print(results)
     print(distances)
-
-
-
-#tester = SimilarDoc('../../../Enron/Tester/original/index.hnsw', False)
-#result, distances = tester.similar_from_topic_vector([(0, 0.010508849), (1, 0.019970758), (2, 0.00), (3, 0.00), (4, 0.00), 
-#                                                      (5, 0.017709557), (6, 0.00), (7, 0.010471645), (8, 0.015099778), 
-#                                                      (9, 0.014586268), (10, 0.00), (11, 0.00), (12, 0.010280435), 
-#                                                      (13, 0.012380897), (14, 0.01203193), (15, 0.060243197), (16, 0.00), 
-#                                                      (17, 0.019973787), (18, 0.016498648), (19, 0.00), (20, 0.00), (21, 0.00), 
-#                                                      (22, 0.00), (23, 0.022730187), (24, 0.00), (25, 0.00), (26, 0.00), 
-#                                                      (27, 0.012456094), (28, 0.0124316), (29, 0.011423724), (30, 0.00), 
-#                                                      (31, 0.01474771), (32, 0.00), (33, 0.00), (34, 0.4723764), (35, 0.00), 
-#                                                      (36, 0.00), (37, 0.00), (38, 0.010276491), (39, 0.00), (40, 0.00), 
-#                                                      (41, 0.00), (42, 0.00), (43, 0.014929281), (44, 0.011724406), 
-#                                                      (45, 0.00), (46, 0.00), (47, 0.00), (48, 0.025309466), (49, 0.00)], 5)
-#print(result)
-#for r in result:
-#    print(r)

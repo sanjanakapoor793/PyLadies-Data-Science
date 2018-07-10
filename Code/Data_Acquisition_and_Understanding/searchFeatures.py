@@ -7,12 +7,10 @@ Created on Thu May 17 13:53:01 2018
 """
 
 from pymongo import MongoClient
-#from pymongo import Connection
-from gensim import models
 from gensim.models import ldamodel
 from gensim.corpora import Dictionary
 from similarDoc import SimilarDoc
-import operator
+
 
 class SearchFeatures():
     
@@ -44,7 +42,6 @@ class SearchFeatures():
         
         """
 
-#        self.similarSearch = similar
         if type(words) == str:
             self.words = words.split()
         else:
@@ -55,9 +52,7 @@ class SearchFeatures():
         self.emailCol = self.emailDB.emails
         
         self.emailCol.create_index([('content', 'text')])
-#        self.emailCol.create_index([('_id', 'text')])
-        
-        
+         
         if eval(keyword):
             self.and_search()
         if eval(topic_search):
@@ -93,13 +88,6 @@ class SearchFeatures():
         find_nearest_n = SimilarDoc(index_filepath, create_index)
         results, distances = find_nearest_n.similar_from_topic_vector(docs_topic_distribution)
         print(results)
-
-        
-#        for r in results:
-#            print(self.topicCol.find_one({'_id': r})['topic_values'])
-
-
-        
    
             
 if __name__ == "__main__":
@@ -120,7 +108,3 @@ if __name__ == "__main__":
     tester = SearchFeatures(keyword = args.k, topic_search = args.s, words = args.w, 
                             dict_filepath = args.d, lda_filepath = args.l, 
                             index_filepath = args.i, create_index = args.c)
-
-# Example search
-#x = SearchFeatures(False, True, 'game updated week team play', '../../../Enron/Tester/original/dictionary.dict', 
-#                   '../../../Enron/Tester/ldamodel_topics_35/ldamodel_topics_35', '../../../Enron/Tester/original/index.hnsw')

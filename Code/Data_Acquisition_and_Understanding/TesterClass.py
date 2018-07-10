@@ -10,8 +10,6 @@ Created on Tue Jul  3 14:09:57 2018
 filepath = 'filepath'
 
 
-
-
 import text_pipeline
 from Pipeline import Pipeline
 from store_data import EmailDataStorage
