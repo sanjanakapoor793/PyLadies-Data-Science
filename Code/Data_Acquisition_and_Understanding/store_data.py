@@ -88,9 +88,6 @@ class EmailDataStorage():
         :param {tuple} row:
             Tuple of values that contain the information about a specific email. 
         
-        :local {dict} email_data:
-            Dict that contains values for a new row in the database. 
-        
         """
         
         from pymongo import MongoClient

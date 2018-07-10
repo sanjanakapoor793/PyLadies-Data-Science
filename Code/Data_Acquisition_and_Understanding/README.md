@@ -8,33 +8,67 @@
 <i> class </i> Pipeline(<i>*steps</i>)
 </pre>
 
+```
+import text_pipeline
+from Pipeline import Pipeline
+from store_data import EmailDataStorage
+from LDA import LDAModelMaker
+
+emails = EmailDataStorage()
+
+tokenizer = text_pipeline.Tokenizer('spacy')
+token_filter = text_pipeline.TokenFilter('spacy')
+stemmer = text_pipeline.Stemmer('spacy')
+pre_processing = text_pipeline.Pipeline(tokenizer, token_filter, stemmer)
+
+lda = LDAModelMaker(create = True, 
+                    texts_filepath = filepath, 
+                    corpus_filepath = filepath, 
+                    dictionary_filepath = filepath, 
+                    lda_filepath = filepath, 
+                    pyldavis_filepath = filepath, 
+                    database = 'mongo', 
+                    num_topics = 35, 
+                    minimum_probability = 0.00, 
+                    passes = 5)
+
+pyladies_pipeline = Pipeline(emails, pre_processing, lda)
+```
+
+In the code snippet above, emails, pre_processing, and lda were instantiated and then passed in as parameters to the Pipeline class.
+
 ##### Class Parameters:
-* steps: List of objects to be applied to the data. Variable length of list. 
+* steps: List of objects to be applied to the data. Variable length of list.  
 
 #### apply(self, result)
-Calls the next step in the pipeline. 
+Calls a step in the pipeline. 
 
 
 ## store_data.py 
 
-This file reads the data from the CSV files and puts it into Mongo DB. The unique ID used (_id) will be the unique ID each email has. 
+This file reads the data and puts it into a database. Both the type of file the code reads the data from and the database to use have to be set when creating the object. Currently, the type of file defaults to csv and the database defaults to MongoDB. 
+
+The _id will be the unique ID each email has. 
 
 ```
-store_csv_files = EmailDataStorage('../../../Enron/Data')
-store_csv_files.move_data()
+store_csv_files = EmailDataStorage('csv', 'mongo')
 ```
 
 ##### Class Parameters: 
-* :param {str} filepath:
-	Filepath to the current set of data being added to the database
+* reading_process (str):
+	Sets the type of file we will be reading the data from. 
+* database (str):
+	Sets the type of database we will be moving the data to. 
 
-#### move_data(self)
+#### csv(self, filepath)
 This method will navigate to the folder where the CSV files are stored and will read them. As it reads a row (and that row meets the necessary requirements), the row will be passed to the add_data method to be added to the database. 
 
-This method has no parameters. 
+##### Parameters:
+* filepath (str):
+	The location of the csv files.  
 
-#### add_data(self, row)
-Here the row is being added to the database. The fields that we require we pull from row and store. A few fields require cleaning, so the cleaned versions of those fields are returned from method calls such as clean_emails and clean_content. 
+#### mongo(self, row)
+Here the row is being added to MongoDB. The fields that we require we pull from row and store. A few fields require cleaning, so the cleaned versions of those fields are returned from method calls such as clean_emails and clean_content. 
 
 ##### Parameters:
 * :param {tuple} row: Tuple of values that contain the information about a specific email. 
@@ -68,8 +102,6 @@ This method removes repeated sets of characters that add no meaning to the messa
 
 ##### Parameters:
 * :param {str} unfiltered_content: Content of one (singular) email
-
-
 
 
 ## LDA.py 
