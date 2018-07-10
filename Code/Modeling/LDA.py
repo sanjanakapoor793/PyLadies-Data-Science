@@ -5,8 +5,7 @@ Created on Fri Apr 20 15:46:20 2018
 
 @author: Sanjana Kapoor
 """
-
-#from store_data import EmailDataStorage 
+ 
 from gensim import corpora
 from gensim.corpora import Dictionary
 from gensim.models import ldamodel
@@ -79,6 +78,8 @@ class LDAModelMaker():
         self.save_texts()
         self.set_dict_corp()
         
+        # We only need the dictionary and corpus when creating the LDAModel. 
+        # This means we can modify self.texts so it is ready to be saved in the database. 
         self.database()
         self.fit_LDA()
     
@@ -116,8 +117,7 @@ class LDAModelMaker():
         """
         with open(self.texts_filepath, 'rb') as save:
             self.texts = pickle.load(save)
-#        print(len(self.texts))
-    
+
     
     def load_dictionary(self):
         """
@@ -155,12 +155,12 @@ class LDAModelMaker():
             ISSUE: when updating the dictionary, new words may be introduced. that means in previous
                 additions to the corpus those words that initially weren't there will only show up 
                 for the latter ones. Dictionary is fine, corpus is not. 
+        
         """
-        self.dictionary.add_documents(self.texts) 
-        # self.dictionary.save('../../../Enron/LDAVar/dictionary.dict')
+        
+        self.dictionary.add_documents(self.texts)
         self.dictionary.save(self.dictionary_filepath)
         self.corpus = self.make_corpus()
-#        print(len(self.corpus))
         corpora.MmCorpus.serialize(self.corpus_filepath, self.corpus)
 
     
@@ -170,6 +170,7 @@ class LDAModelMaker():
         Make corpus 
         
         """
+        
         return [self.dictionary.doc2bow(text) for text in self.texts]
     
     
@@ -203,6 +204,7 @@ class LDAModelMaker():
         
         :param {line in database} email:
             One line in the database
+            
         """
         
         if list_filtered_emails is None:
@@ -249,10 +251,6 @@ class LDAModelMaker():
                 print(email['email_counter'])
                 print(email['_id'])
                 
-    
-    
-
-
 
 if __name__ == "__main__":
     import argparse
@@ -269,9 +267,4 @@ if __name__ == "__main__":
     parser.add_argument('-d', required = True)
     args = parser.parse_args()
     tester = LDAModelMaker(create_texts = args.x, texts_filepath = args.t, corpus_filepath = args.c, dictionary_filepath = args.d)
-    print("THE SAVING HAS FINISHED")
     tester.fit_LDA(lda_filepath = args.l, pyldavis_filepath = args.p, num_topics = args.n)
-    print('finished')
-# tester = LDAModelMaker('False', '../../../Enron/Tester/original/texts.txt', '../../../Enron/Tester/original/corpus.mm', '../../../Enron/Tester/original/dictionary.dict')
-#tester.fit_LDA('../../../Enron/Tester/ldamodel_topics_35_folder/ldamodel_topics_35', '../../)
-#tester.load_texts('../../../Enron/Texts/texts.txt')
