@@ -94,92 +94,76 @@ email_data = {
 This method cleans the sender and recipient fields in row. Different values are required depending on whether or not we are currently cleaning a sender email or a recipient email. 
 
 ##### Parameters: 
-* :param {tuple} row: Tuple of values that contain the information about a specific email. 
-* :param {boolean} sender_recip: Indicates whether or not this is the sender's email or recipient's email
+* row (tuple): Tuple of values that contain the information about a specific email. 
+* sender_recip (boolean): Indicates whether or not this is the sender's email or recipient's email
 
 #### clean_content(self, unfiltered_content)
 This method removes repeated sets of characters that add no meaning to the message. Remember, these changes are occurring in the original version of the email. That way if the user wants to see the original content (before the processing) they can see a clean version that doesn't have all those useless characters. 
 
 ##### Parameters:
-* :param {str} unfiltered_content: Content of one (singular) email
+* unfiltered_content (str): Content of one (singular) email
 
 
 ## LDA.py 
 
 This class will use a dictionary and corpus to generate a LDA Model that will be used for future analysis. 
 
-If create_texts is true, then at the end of the process there will be saved versions of the texts, corpus, dictionary, lda model, and pyLDAvis model. These can (and will) be used later. 
+If create is true, then at the end of the process there will be saved versions of the texts, corpus, dictionary, lda model, and pyLDAvis model. These can (and will) be used later. 
 
-Otherwise (if create_texts is false), there will just be a new lda model and a new pyLDAvis model. The texts, corpus, and dictionary files will be unaffected (since we are just reading from them and not changing them).
+Otherwise (if create is false), there will just be a new lda model and a new pyLDAvis model. The texts, corpus, and dictionary files will be unaffected (since we are just reading from them and not changing them).
 
 ##### Class Parameters:
-* :param {boolean} create_texts: Whether or not we must create texts or simply load them from a file. 
-* :param {str} texts_filepath: Either the location of where to load texts from or where we must save texts to. 
-* :param {str} corpus_filepath: Location of where we must save or load the corpus from. 
-* :param {str} dictionary_filepath: Location of where we must save or land the dictionary from. 
+* create (boolean): Whether or not we must create the corpus and dictionary or simply load them from a file. 
+* texts_filepath (str): Either the location of where to load texts from or where we must save texts to. 
+* corpus_filepath (str): Location of where we must save or load the corpus from. 
+* dictionary_filepath (str): Location of where we must save or land the dictionary from. 
+* lda_filepath (str): Location of where we must save the lda model to. 
+* pyldavis_filepath (str): Location of where we must save the pyldavis to.
+* database (str): Which kind of database we will be using. 
 
-#### start_cleaning_process(self, texts_filepath, corpus_filepath, dictionary_filepath)
-This method starts the process of processing the emails. The processed content from each email is added to a list so that at the end we have a list of list of tokens. The processing occurs in the clean_data method that is called from this method. After all the contents are appended, we do frequency checks. Finally, we save the final version of texts so that we can later load it instead of having to process it every time. 
+#### create_corpus_dict(self, texts)
+Save the filtered content returned from the pipeline, create the corpus and dictionary, save the filtered contents and corpus value of each document in the database and then generate the lda model. 
 
 ##### Parameters:
-* :param {str} texts_filepath: Where to save the generated texts to. 
-* :param {str} corpus_filepath: Where to save the generated corpus to. 
-* :param {str} dictionary_filepath: Where to save generated dictionary to. 
+* texts (list[list[str]]): the filtered content from the preprocessing pipeline. 
 
-#### clean_data(self, table, text)
-Removes characters that aren't letters or numbers as well as excludes stopwords and words that have a length of 1.
+#### mongo(self)
+Set up MongoDB for future use. 
 
-##### Parameters: 
-* :param {str} text: container that has one email 
-* :param table: structure that maps the characters in self.remove to blank spaces 
+This method has no parameters. 
 
-#### frequency_check(self, corpus_filepath, dictionary_filepath)
-Removes tokens that only occur once in the entire corpus. 
+#### load_corpus_dict(self, x)
+Load the corpus, dictionary, and texts and create the LDA model. 
 
-##### Parameters: 
-* :param {str} corpus_filepath: Where to save the generated corpus to. 
-* :param {str} dictionary_filepath: Where to save generated dictionary to. 
-
-#### email_database_content(self)
-Here we group the tokens in one document back together that way we can see the filtered document as one long string instead of a list of tokens. 
-
-No parameters. 
-
-#### save_texts(self, filepath)
+#### save_texts(self)
 Save the list of list of tokens that way we don't need to recompute them in the future. 
 
-##### Parameters: 
-* :param {str} filepath: Filepath of where to save information. 
+This method has no parameters. 
 
-#### load_texts(self, filepath)
+#### load_texts(self)
 Load texts (list of list of tokens) from the file it was saved to earlier. 
 
-##### Parameters: 
-* :param {str} filepath: Filepath of where to load information from. 
+This method has no parameters.
 
-#### load_dictionary(self, dictionary_location)
+#### load_dictionary(self)
 Load the dictionary from the file it was saved to earlier. 
 
-##### Parameters: 
-* :param {str} dictionary_location: Filepath of where to load information from. 
+This method has no parameters.
 
-#### load_corpus(self, corpus_location)
+#### load_corpus(self)
 Load the corpus from the file it was saved to earlier. 
 
-##### Parameters: 
-* :param {str} corpus_location: Filepath of where to load information from. 
+This method has no parameters.
 
-#### set_dict_corp(self, corpus_location, dictionary_location)
+#### set_dict_corp(self)
 Update the dictionary with the new documents, generate the corpus with the new dictionary and save both. 
 
-##### Parameters: 
-* :param {str} dictionary_location: Filepath of where to load information from. 
-* :param {str} corpus_location: Filepath of where to load information from. 
+This method has no parameters.
 
 #### make_corpus(self)
 Make the corpus from the dictionary. 
 
-No parameters. 
+This method has no parameters. 
 
 #### get_domain(self, list_filtered_emails, email)
 Find the domain of the sender and recipient emails. 
@@ -188,23 +172,20 @@ Find the domain of the sender and recipient emails.
 * :param {str} list_filtered_emails: List of filtered emails. 
 * :param {line in database} email: One line in the database
 
+#### email_database_content(self)
+Here we group the tokens in one document back together that way we can see the filtered document as one long string instead of a list of tokens. 
+
+No parameters. 
+
 #### set_email_database(self)
 Add the filtered content and corpus for each email to their row in the database.
 
 No parameters.
 
-#### fit_LDA(self, lda_filepath, pyldavis_filepath, num_topics)
+#### fit_LDA(self)
 Generate / fit the LDA model. Both the model generated and a pyLDAvis representation of the model will be saved. Both can (and will) be used for future analysis. 
 
-##### Parameters:
-* :param {str} lda_filepath: Where to save lda model to. 
-* :param {str} pyldavis_filepath: Where to save pyldavis model to. 
-* :param {int} num_topics: Number of topics the LDA model should look for. 
-
-#### get_run_param(self)
-Gather the run parameters that will be used when creating the LDA model. 
-
-No parameters. 
+This method has no parameters.
 
 
 3. docTopicVector.py in the Data_Aquisition... folder. 
