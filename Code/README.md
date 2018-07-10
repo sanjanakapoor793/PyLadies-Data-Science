@@ -75,7 +75,7 @@ for vector in self.emailCol.find9 {'$query': {}, '$orderby': {'email_counter': 1
 index.createIndex()
 ```
 
-To create the index you must pass in the method and space. They are set to 'hens' and 'cosinesimil' respectively. These parameters have been optimized for nearest neighbors	searches and are quite good for text analysis. 
+To create the index you must pass in the method and space. They are set to 'hnsw' and 'cosinesimil' respectively. These parameters have been optimized for nearest neighbors	searches and are quite good for text analysis. 
 
 After calling .init, you must add all the data points to the index. In this case, each data point is a document topic vector. 
 
