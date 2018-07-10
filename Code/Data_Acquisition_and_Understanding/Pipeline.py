@@ -10,8 +10,8 @@ Created on Mon Jul  2 17:01:24 2018
 
 class Pipeline():
     
-    def __init__(self, *args):
-        self.steps = args
+    def __init__(self, *steps):
+        self.steps = steps
     
     
     def apply(self, result):

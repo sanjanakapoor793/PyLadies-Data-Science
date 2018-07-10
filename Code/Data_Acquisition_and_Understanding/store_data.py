@@ -128,11 +128,6 @@ class EmailDataStorage():
         """
         Clean the email addresses
         
-        TO-DO: FIgure out why changing code to list(eval(row)) results in an error.
-        
-           ' change code to list(eval(row)). This will change the method to return
-            a list instead of a long string of emails. '
-        
         :param {tuple} row:
             Tuple of values that contain the information about a specific email. 
             
