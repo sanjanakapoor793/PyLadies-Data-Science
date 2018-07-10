@@ -77,7 +77,6 @@ class EmailDataStorage():
                             print(num_added)
                 except csv.Error as e:
                     print(e)
-                    print("error")
                     print(row)
                     print(email_file)
         print("The total number of rows in the .csv files"  + str(num_row))
