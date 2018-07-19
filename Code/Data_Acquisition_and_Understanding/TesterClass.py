@@ -39,12 +39,6 @@ lda = LDAModelMaker(create = True,
 pyladies_pipeline = Pipeline(emails, pre_processing, lda)
 
 
-
-
-
-
-
-
 # =============================================================================
 # You can add more steps to your Pipeline. 
 # Adding these 2 classes will remove 2 steps you will probably end up having to do. 
