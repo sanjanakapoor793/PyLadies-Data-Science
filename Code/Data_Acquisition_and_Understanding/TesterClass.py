@@ -37,6 +37,7 @@ lda = LDAModelMaker(create = True,
                     passes = 5)
 
 pyladies_pipeline = Pipeline(emails, pre_processing, lda)
+pyladies_pipeline.apply("""FILEPATH GOES HERE""")
 
 
 # =============================================================================
